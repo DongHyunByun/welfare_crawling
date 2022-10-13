@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup as bs
 import pandas as pd
 
 from datetime import datetime
+import time
+import sys
 
 class Crawling:
     service_type_val = {"생활안정": "NB0301", "주거-자립": "NB0302", "보육-교육": "NB0303", "고용-창업": "NB0304",
@@ -18,6 +20,7 @@ class Crawling:
 
     now_d = datetime.today().strftime("%Y%m%d%H%M")
 
+    size = 0
     final_return_dict = {
         "상세검색_서비스분야": [],
         "상세검색_지원형태": [],
@@ -61,7 +64,7 @@ class Crawling:
                         url_vals = [self.service_type_val[st], self.support_type_val[supt], self.apply_type_val[at], str(page_number)]
                         url = self.get_url(self.main_url, url_keys, url_vals)
 
-                        page = requests.get(url)  # get요청 후 응답 수신
+                        page = self.try_request(url)  # get요청 후 응답 수신
                         soup = bs(page.text, "html.parser")
                         posts = soup.find_all('a', {"class": "btn btn-type3"})
                         if not posts:
@@ -82,13 +85,13 @@ class Crawling:
                             now_dict["상세검색_신청방법"] = at
                             now_dict["스크랩시간"] = self.now_d
 
-                            print(now_dict)
                             for key,val in now_dict.items():
                                 self.final_return_dict[key].append(val)
-
+                            self.size+=1
+                            print(self.size,"번째!!",now_dict)
                         page_number+=12
-                        break
 
+        print("정상종료")
         return pd.DataFrame(self.final_return_dict)
 
     def get_url(self,main_url,url_keys,url_vals):
@@ -112,8 +115,22 @@ class Crawling:
         text = text.lstrip("-").lstrip("=")
         return text
 
+    def try_request(self,url):
+        '''
+        request를 수행한다. 실패시 30초 대기 후 다시 시도한다.
+        '''
+        for i in range(3):
+            try:
+                post_page = requests.get(url)
+                return post_page
+            except:
+                print("except!")
+                if i == 2:
+                    sys.exit("3회 시도 실패로 강제종료")
+                time.sleep(30)
+
     def get_post_info(self,url,now_dict):
-        post_page = requests.get(url)
+        post_page = self.try_request(url)
         post_soup = bs(post_page.text, "html.parser")
 
         title = post_soup.find('strong', {"class": "benefit-detail-title"}).text
