@@ -18,7 +18,7 @@ class Crawling:
     super_url = "https://www.gov.kr"
     main_url = "https://www.gov.kr/portal/rcvfvrSvc/svcFind/svcSearchAll"
 
-    now_d = datetime.today().strftime("%Y%m%d%H%M")
+    now_d = datetime.today().strftime("%Y-%m-%d")
 
     size = 0
     final_return_dict = {
@@ -78,7 +78,7 @@ class Crawling:
                             now_dict = {key:None for key in self.final_return_dict.keys()}
                             now_dict = self.get_post_info(url,now_dict)
                             now_dict["게시글_url"] = url
-                            now_dict["게시글_id"] = last_url.split("/")[-1].split("?")[0]
+                            now_dict["게시글_id"] = str(last_url.split("/")[-1].split("?")[0])
                             now_dict["상세검색_서비스분야"] = st
                             now_dict["상세검색_지원형태"] = supt
                             now_dict["상세검색_신청방법"] = at
@@ -117,7 +117,7 @@ class Crawling:
 
     def try_request(self,url):
         '''
-        request를 수행한다. 실패시 30초 대기 후 다시 시도한다.
+        request를 수행한다. 실패시 30초 대기 후 다시 시도한다. 총 3회 시도한다
         '''
         for i in range(3):
             try:

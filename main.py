@@ -1,6 +1,7 @@
 from crawling import Crawling
 from datetime import datetime
 import argparse
+import openpyxl
 
 if __name__ == "__main__":
     args = argparse.ArgumentParser()
@@ -15,4 +16,4 @@ if __name__ == "__main__":
 
     crawler = Crawling()
     df = crawler.crawling()
-    df.to_csv(folder+"/"+d+".csv",index=False,encoding="utf-8-sig")
+    df.to_excel(folder+"/"+d+".xlsx",index=False,encoding="utf-8-sig")
